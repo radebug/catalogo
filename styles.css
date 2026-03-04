@@ -1,0 +1,443 @@
+:root{
+  --bg:#f3f5f8;
+  --panel:#fff;
+  --line:#d5d9e2;
+  --text:#1b1f2a;
+  --muted:#5a6476;
+  --btn:#f2f3f6;
+  --btn2:#e7ebf2;
+  --accent:#2a67d1;
+  --danger:#c43b3b;
+  --shadow:0 6px 16px rgba(0,0,0,.08);
+  --r:10px;
+  --font:"Segoe UI",system-ui,-apple-system,Arial;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);}
+
+.topbar{
+  background:var(--panel);
+  border-bottom:1px solid var(--line);
+  box-shadow:var(--shadow);
+  padding:10px 12px;
+  position:sticky;top:0;z-index:10;
+}
+.title{font-weight:700;margin-bottom:8px;}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.spacer{flex:1}
+.note{color:var(--muted);font-size:12px}
+
+.checkList{
+  border:1px solid var(--line);
+  border-radius: var(--r);
+  background:#fff;
+  padding:8px;
+  max-height: 160px;
+  overflow:auto;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.checkItem{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size: 13px;
+  color: var(--text);
+}
+.checkItem input{ transform: translateY(1px); }
+
+.search{
+  min-width:240px;
+  padding:9px 10px;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:#fff;
+}
+.btn{
+  padding:9px 10px;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:var(--btn);
+  cursor:pointer;
+  font-weight:600;
+}
+.btn:hover{background:var(--btn2)}
+.btn.ghost{background:#fff}
+.btn.danger{color:var(--danger);border-color:#f0c2c2}
+.btn.small{padding:6px 8px;font-size:12px}
+
+.layout{
+  display:grid;
+  grid-template-columns:260px 1fr;
+  gap:12px;
+  padding:12px;
+}
+.sidebar,.content{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  box-shadow:var(--shadow);
+}
+.sidebar{padding:10px}
+.sidebarHeader .h{font-weight:700;margin-bottom:8px}
+.smallNote{font-size:12px;color:var(--muted);margin-top:10px}
+code{background:#f3f5f8;border:1px solid var(--line);padding:1px 5px;border-radius:8px}
+
+.categoryList{display:flex;flex-direction:column;gap:6px}
+.cat{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  padding:8px;border:1px solid var(--line);border-radius:var(--r);background:#fff;cursor:pointer;
+}
+.cat.active{
+  border-color:rgba(42,103,209,.45);
+  box-shadow:0 0 0 3px rgba(42,103,209,.12);
+}
+.catName{font-weight:600}
+.catBtns{display:flex;gap:6px}
+
+.content{padding:10px}
+.filterLine{color:var(--muted);font-size:12px;margin-bottom:10px}
+
+.productGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+  gap:10px;
+}
+
+/* Card layout: image on top, not cropped */
+.card{
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  overflow:hidden;
+  background:#fff;
+  display:flex;
+  flex-direction:column;
+}
+.thumb{
+  border-bottom:1px solid var(--line);
+  background:#f7f8fb;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:8px;
+}
+.thumbImg{
+  width:100%;
+  height:auto;
+  max-height:240px;
+  object-fit:contain;
+  display:none;
+}
+.thumbEmpty{
+  color:var(--muted);
+  font-size:12px;
+  padding:18px 8px;
+  text-align:center;
+}
+
+.cardBody{padding:10px;display:flex;flex-direction:column;gap:8px}
+.cardTop{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.pName{font-weight:750}
+.pill{
+  font-size:12px;padding:3px 8px;border:1px solid var(--line);
+  border-radius:999px;background:#fff;color:var(--muted);white-space:nowrap; max-width: 45%;
+  overflow:hidden; text-overflow:ellipsis;
+}
+.stockLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.stockTotal{font-weight:800}
+.details summary{cursor:pointer;color:var(--accent);font-size:12px}
+.btnRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+
+.empty{
+  padding:14px;color:var(--muted);
+  border:1px dashed var(--line);border-radius:var(--r);text-align:center
+}
+
+/* dialogs */
+.dlg::backdrop{background:rgba(0,0,0,.2)}
+.dlg{border:none;background:transparent;padding:0}
+.dlgBody{
+  width:min(560px,calc(100vw - 24px));
+  background:#fff;border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);padding:12px;
+}
+.dlgBody.wide{width:min(860px,calc(100vw - 24px))}
+.dlgTitle{font-weight:800;margin-bottom:10px}
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.row span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+input,textarea,select{
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:9px 10px;
+  font:inherit;
+  background:#fff;
+}
+textarea{resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dlgBtns{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+
+.dlgBtnsSplit{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+.dlgBtnsRight{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+}
+
+.imgRow{display:grid;grid-template-columns:170px 1fr;gap:10px;align-items:start;margin-top:6px}
+.imgBox{
+  height:120px;border:1px solid var(--line);border-radius:var(--r);
+  background:#f7f8fb;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;color:var(--muted);font-size:12px;
+}
+.imgBox img{width:100%;height:100%;object-fit:contain}
+.imgSide{display:flex;flex-direction:column;gap:6px}
+
+.rowBtns{display:flex;gap:8px;flex-wrap:wrap}
+
+.stockGrid{display:grid;grid-template-columns:1.1fr 1fr;gap:10px;margin-top:10px}
+.panel{
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:10px;
+  background:#fbfcff;
+}
+.panelTitle{font-weight:700;margin-bottom:8px}
+#lotList{
+  max-height:260px;
+  overflow:auto;
+  padding-right:4px;
+}
+.lotRow{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:8px;
+  border:1px solid var(--line);border-radius:var(--r);
+  padding:8px;background:#fff;margin-bottom:6px;
+}
+.lotMeta{display:flex;flex-direction:column;gap:2px}
+.lotExp{font-weight:700}
+.lotQty{color:var(--muted);font-size:12px}
+.lotRow:last-child{margin-bottom:0}
+
+.miscGrid{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.miscTitle{font-weight:700;font-size:12px;margin-bottom:4px}
+.miscBox{
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:8px;
+  background:#fbfcff;
+  color:var(--muted);
+  font-size:12px;
+  white-space:pre-wrap;
+  margin:0;
+  min-height:34px;
+}
+.lotsWrap{ grid-column: 1 / -1; }
+.lotsBox{
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:#fbfcff;
+  padding:8px;
+  max-height:220px;
+  overflow:auto;
+}
+
+.lotItem{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 8px;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:#fff;
+  margin-bottom:6px;
+  font-size:12px;
+  color:var(--muted);
+}
+.lotItem:last-child{ margin-bottom:0; }
+.lotTag{
+  font-weight:700;
+  border-radius:999px;
+  padding:2px 8px;
+  border:1px solid var(--line);
+  background:#fff;
+  color:var(--muted);
+  font-size:11px;
+}
+
+.lotMain{display:flex;flex-direction:column;gap:2px}
+.lotQtyBig {
+  font-weight: 900;
+  color: var(--text);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Space between "Qty: X" and the pills */
+}
+.lotDateSmall{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;}
+
+/* --- LOT STATUS (Rows inside the Dialog) --- */
+.lotExpired { background-color: #ffebee; border-left: 5px solid #b71c1c; }
+.lotExpired .lotTag { background-color: #b71c1c; color: #fff; }
+
+.lotExpiring { background-color: #ffe4e4; border-left: 5px solid #f44336; }
+.lotExpiring .lotTag { background-color: #f44336; color: #fff; }
+
+.lotRisky { background-color: #fff3e0; border-left: 5px solid #e65100; }
+.lotRisky .lotTag { background-color: #e65100; color: #fff; }
+
+/* --- PRODUCT CARD STATUS (The Grid Cards) --- */
+/* Out of Stock */
+.card.cardOut { background: #f3f5f8; border-color: #d7dbe3; }
+.card.cardOut .cardBody { opacity: .65; }
+.card.cardOut .thumb { background: #eef1f6; }
+.card.cardOut .thumbImg { filter: grayscale(100%); opacity: .75; }
+
+/* Expired (Priority 1) */
+.card.cardExpired { 
+  background: #f2d0d0; 
+  border: 2px solid #b71c1c; 
+}
+
+/* Expiring (Priority 2) */
+.card.cardExpiring { 
+  background: #ffe4e4; 
+  border: 2px solid #f44336; 
+}
+
+/* Risky (Priority 3) */
+.card.cardRisky { 
+  background: #fff3e0; 
+  border: 2px solid #e65100; 
+}
+
+/* Low Stock (Priority 4) */
+.card.cardLow { 
+  background: #fff7d6; 
+  border: 2px solid #fbc02d; 
+}
+
+/* --- CARTON PILLS --- */
+.ct-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #000;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ct-pill-full { background-color: #ffeb3b; border-color: #c4a500; }
+.ct-pill-partial { background-color: #d5d9e2; border-color: #6d768d; }
+
+.catSeparator {
+  height: 1px;
+  background: var(--line);
+  margin: 8px 4px;
+  opacity: 0.6;
+}
+
+.statusDots {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot.expired { background-color: #b71c1c; border: 1px solid rgba(0,0,0,0.1); }
+.dot.expiring { background-color: #f44336; border: 1px solid rgba(0,0,0,0.1); }
+.dot.risky { background-color: #e65100; border: 1px solid rgba(0,0,0,0.1); }
+
+/* Ordered Lots */
+.lotOrdered {
+    background-color: #e5f6e5;
+    border-left: 5px solid #2e7d32;
+}
+.lotOrdered .lotTag {
+    background-color: #2e7d32;
+    color: #fff;
+}
+
+/* Buttons */
+.btn.order {
+    background: #d6f5d6;
+    border-color: #2e7d32;
+    color: #2e7d32;
+}
+.btn.order:hover {
+    background: #c0eac0;
+}
+
+
+.btn.received {
+  background: #dbeafe;     /* light blue */
+  border-color: #3b82f6;   /* blue-500 */
+  color: #1e3a8a;          /* blue-900 */
+}
+
+.btn.received:hover {
+  background: #bfdbfe;     /* lighter blue */
+}
+
+
+
+/* Product card green state */
+.card.cardOrdered {
+    background: #e5f6e5;
+    border: 2px solid #2e7d32;
+}
+
+/* Status dot */
+.dot.ordered {
+    background-color: #2e7d32;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+/* Green product card (only ordered lots present) */
+.card.cardOrdered {
+  background: #e5f6e5;
+  border: 2px solid #2e7d32;
+}
+
+/* Green status dot (ordered) */
+.dot.ordered {
+  background-color: #2e7d32;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+
+@media (max-width:980px){
+  .layout{grid-template-columns:1fr}
+  .grid2{grid-template-columns:1fr}
+  .imgRow{grid-template-columns:1fr}
+  .stockGrid{grid-template-columns:1fr}
+}

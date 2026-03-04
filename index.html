@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Product Catalogue</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="title">Product Catalogue</div>
+
+    <div class="toolbar">
+      <button class="btn" id="btnOpenFolder">Use catalogue folder…</button>
+      <span class="note" id="folderStatus">Folder mode: OFF</span>
+
+      <button class="btn" id="btnLoad">Load JSON</button>
+      <button class="btn" id="btnSave" disabled>Save JSON</button>
+
+      <div class="spacer"></div>
+
+      <input class="search" id="urlInput" type="url" placeholder="Optional: URL to data/catalogue.json (https://…/catalogue.json)" />
+      <button class="btn" id="btnLoadUrl">Load URL</button>
+
+      <span class="note" id="fileNote">No file loaded.</span>
+      <div class="spacer"></div>
+
+      <input class="search" id="search" type="search" placeholder="Search name / wordings / codes…" disabled />
+      <button class="btn" id="btnAddProduct" disabled>Add product</button>
+      <button class="btn" id="btnAddCategory" disabled>Add category</button>
+    </div>
+
+    <input id="filePicker" type="file" accept="application/json" hidden />
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <div class="h">Categories</div>
+      <input type="text" id="catSearch" class="search" placeholder="Filter categories..." style="width: 100%; margin-bottom: 10px; padding: 6px 10px; font-size: 13px;">
+      <div id="categoryList" class="categoryList"></div>
+      <div class="smallNote">
+        Images are loaded from <b>media/</b> by filename (example: <code>tiramisu.jpg</code>).
+      </div>
+    </aside>
+
+    <section class="content">
+      <div id="filterLine" class="filterLine"></div>
+      <div id="productGrid" class="productGrid"></div>
+      <div id="empty" class="empty" hidden>No products found.</div>
+    </section>
+  </main>
+
+  <!-- Category dialog -->
+  <dialog class="dlg" id="catDlg">
+    <form method="dialog" class="dlgBody" id="catForm">
+      <div class="dlgTitle" id="catTitle">Category</div>
+
+      <label class="row">
+        <span>Name</span>
+        <input id="catName" required maxlength="60" />
+      </label>
+
+      <div class="dlgBtns">
+        <button class="btn ghost" type="button" id="btnCatCancel">Cancel</button>
+        <button class="btn" type="submit" id="btnCatSave">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Product dialog -->
+  <dialog class="dlg" id="prodDlg">
+    <form method="dialog" class="dlgBody wide" id="prodForm">
+      <div class="dlgTitle" id="prodTitle">Product</div>
+
+      <div class="grid2">
+        <label class="row">
+          <span>Product Name</span>
+          <input id="prodName" type="text" required />
+        </label>
+
+        <label class="row">
+          <span>Categories (tick all that apply)</span>
+          <div id="prodCategoriesBox" class="checkList"></div>
+        </label>
+      </div>
+
+      <div class="grid2">
+        <label class="row">
+          <span>Wordings (one per line)</span>
+          <textarea id="prodWordings" rows="6"></textarea>
+        </label>
+
+        <label class="row">
+          <span>Codes / IDs (one per line)</span>
+          <textarea id="prodCodes" rows="6"></textarea>
+        </label>
+      </div>
+
+      <label class="row">
+        <span>Notes (optional)</span>
+        <textarea id="prodNotes" rows="3"></textarea>
+      </label>
+
+      <div class="imgRow">
+        <div class="imgBox" id="imgPreview">No image</div>
+
+        <div class="imgSide">
+          <label class="row">
+            <span>Image filename (in media/)</span>
+            <input id="prodImageFileName" placeholder="e.g. tiramisu.jpg" />
+          </label>
+
+          <div class="rowBtns">
+            <button class="btn" type="button" id="btnPickImage">Pick image…</button>
+            <button class="btn ghost" type="button" id="btnClearImage">Clear</button>
+          </div>
+          
+          <label class="row">
+            <span>CT Size (Packs per Carton)</span>
+            <input id="prodCtSize" type="number" min="1" step="1" placeholder="e.g. 12" />
+          </label>
+
+          <input id="imgFilePicker" type="file" accept="image/*" hidden />
+
+          <div class="smallNote" id="imgHint">
+            Folder mode: picking an image will copy it into <b>media/</b>. Otherwise you’ll need to copy it manually.
+          </div>
+        </div>
+      </div>
+
+      <div class="dlgBtns dlgBtnsSplit">
+        <button class="btn ghost" type="button" id="btnProdDuplicate">Duplicate</button>
+
+        <div class="dlgBtnsRight">
+          <button class="btn ghost" type="button" id="btnProdCancel">Cancel</button>
+          <button class="btn" type="submit" id="btnProdSave">Save</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Stock dialog -->
+  <dialog class="dlg" id="stockDlg">
+    <form method="dialog" class="dlgBody wide" id="stockForm">
+      <div class="dlgTitle">Adjust Stock</div>
+      <div class="smallNote" id="stockHeader"></div>
+
+      <div class="stockGrid">
+        <div class="panel">
+          <div class="panelTitle">Expiry lots</div>
+          <div id="lotList"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panelTitle">Add / Withdraw</div>
+
+          <label class="row">
+            <span>Expiry date (DD/MM/YYYY)</span>
+            <input type="text" id="stockExpiry" placeholder="DD/MM/YYYY" inputmode="numeric">
+          </label>
+
+          <label style="display:flex; align-items:center; gap:6px; margin-top:-6px;">
+            <input type="checkbox" id="stockUnknownExpiry">
+            Unknown expiry date
+          </label>
+
+          <label class="row">
+    		<span>Quantity</span>
+    		<div style="display:flex; gap:10px;">
+       		 <input id="stockQty" type="number" min="1" step="1" />
+        		<select id="stockUnitSelector">
+            		<option value="units">Units</option>
+            		<option value="ct">Cartons (CT)</option>
+        		</select>
+    		</div>
+	</label>
+
+          <div class="rowBtns">
+    <button class="btn" type="button" id="btnStockAdd">Add</button>
+    <button class="btn danger" type="button" id="btnStockWithdraw">Withdraw</button>
+    <button class="btn order" type="button" id="btnStockOrder">Order</button>
+</div>
+
+          <div class="smallNote" id="stockMsg"></div>
+        </div>
+      </div>
+
+      <div class="dlgBtns">
+        <button class="btn ghost" value="cancel" formnovalidate>Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- More info dialog -->
+  <dialog class="dlg" id="infoDlg">
+    <form method="dialog" class="dlgBody wide" id="infoForm">
+      <div class="dlgTitle" id="infoTitle">More info</div>
+      <div class="smallNote" id="infoSub"></div>
+
+      <div class="miscGrid">
+        <div>
+          <div class="miscTitle">Wordings</div>
+          <pre class="miscBox" id="infoWordings"></pre>
+        </div>
+        <div>
+          <div class="miscTitle">Codes</div>
+          <pre class="miscBox" id="infoCodes"></pre>
+        </div>
+        <div class="lotsWrap">
+          <div class="miscTitle">Expiry lots</div>
+          <div class="lotsBox" id="infoLots"></div>
+        </div>
+      </div>
+
+      <div class="dlgBtns">
+        <button class="btn ghost" value="cancel" formnovalidate>Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <template id="cardTpl">
+    <div class="card">
+      <div class="thumb">
+        <img class="thumbImg" alt="" />
+        <div class="thumbEmpty">No image</div>
+      </div>
+
+      <div class="cardBody">
+        <div class="cardTop">
+          <div class="pName"></div>
+          <div class="pill pCat"></div>
+        </div>
+
+        <div class="stockLine">
+          <div class="stockTotal"></div>
+          <div id="ctPillContainer" class="ct-container"></div> <div class="stockLots" hidden></div>
+        </div>
+
+        <div class="btnRow">
+          <button class="btn small ghost" data-act="info">More info…</button>
+          <button class="btn small" data-act="stock">Stock…</button>
+          <button class="btn small ghost" data-act="edit">Edit</button>
+          <button class="btn small ghost danger" data-act="del">Delete</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
