@@ -147,15 +147,19 @@ async function initSupabase() {
     console.warn("Supabase not configured yet.");
     return;
   }
+
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-	// ✅ Serve per ottenere un JWT e poter chiamare Edge Functions con JWT verification ON
-const { data: sess } = await supabaseClient.auth.getSession();
-if (!sess?.session) {
-  await supabaseClient.auth.signInAnonymously();
+
+  // ✅ Serve per ottenere un JWT e poter chiamare Edge Functions con JWT verification ON
+  const { data: sess } = await supabaseClient.auth.getSession();
+  if (!sess?.session) {
+    await supabaseClient.auth.signInAnonymously();
+  }
 }
 
 async function loadCatalogueOnline() {
   if (!supabaseClient) return false;
+
   const { data, error } = await supabaseClient
     .from("catalogue")
     .select("data, updated_at")
