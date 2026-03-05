@@ -6,8 +6,6 @@ const els = {
 
   btnLoad: $("#btnLoad"),
   btnSave: $("#btnSave"),
-  btnLoadUrl: $("#btnLoadUrl"),
-  urlInput: $("#urlInput"),
   fileNote: $("#fileNote"),
   filePicker: $("#filePicker"),
 
@@ -76,6 +74,135 @@ stockUnitSelector.innerHTML = `
     <option value="ct">Cartons (CT)</option>
 `;
 
+
+
+/* -------------------- Supabase + Portal Auth (username/password) -------------------- */
+const SUPABASE_URL = window.SUPABASE_URL;
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY;
+const SUPABASE_FN_NAME = window.SUPABASE_FN_NAME || "catalogue";
+const CATALOGUE_ROW_ID = "main";
+
+let supabaseClient = null;
+
+const PORTAL_SESSION_KEY = "portal_session_v1";
+let portalSession = null; // { token, role, username, exp }
+
+function loadPortalSession() {
+  try {
+    const raw = localStorage.getItem(PORTAL_SESSION_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (!s?.token) return null;
+    if (s.exp && Date.now() > (s.exp * 1000)) {
+      localStorage.removeItem(PORTAL_SESSION_KEY);
+      return null;
+    }
+    return s;
+  } catch { return null; }
+}
+
+function savePortalSession(s) {
+  portalSession = s;
+  localStorage.setItem(PORTAL_SESSION_KEY, JSON.stringify(s));
+  refreshAuthUI();
+}
+
+function clearPortalSession() {
+  portalSession = null;
+  localStorage.removeItem(PORTAL_SESSION_KEY);
+  refreshAuthUI();
+}
+
+function isAdmin() {
+  return portalSession?.role === "admin";
+}
+
+function refreshAuthUI() {
+  const st = document.getElementById("authStatus");
+  const btnLogin = document.getElementById("btnLogin");
+  const btnLogout = document.getElementById("btnLogout");
+  const u = document.getElementById("authUser");
+  const p = document.getElementById("authPass");
+
+  if (portalSession?.token) {
+    if (st) st.textContent = `Logged as ${portalSession.username} (${portalSession.role})`;
+    if (btnLogin) btnLogin.style.display = "none";
+    if (btnLogout) btnLogout.style.display = "";
+    if (u) u.style.display = "none";
+    if (p) p.style.display = "none";
+  } else {
+    if (st) st.textContent = "Viewer mode";
+    if (btnLogin) btnLogin.style.display = "";
+    if (btnLogout) btnLogout.style.display = "none";
+    if (u) u.style.display = "";
+    if (p) p.style.display = "";
+  }
+
+  const editable = isAdmin();
+  if (els?.btnSave) {
+    els.btnSave.disabled = !editable;
+    els.btnSave.title = editable ? "" : "Login as admin to save changes";
+  }
+  if (els?.btnAddProduct) els.btnAddProduct.style.display = editable ? "" : "none";
+  if (els?.btnAddCategory) els.btnAddCategory.style.display = editable ? "" : "none";
+}
+
+async function initSupabase() {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || String(SUPABASE_URL).includes("PASTE_")) {
+    console.warn("Supabase not configured yet.");
+    return;
+  }
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+async function loadCatalogueOnline() {
+  if (!supabaseClient) return false;
+  const { data, error } = await supabaseClient
+    .from("catalogue")
+    .select("data, updated_at")
+    .eq("id", CATALOGUE_ROW_ID)
+    .single();
+
+  if (error) {
+    console.warn("Supabase load failed:", error.message);
+    return false;
+  }
+
+  const obj = data?.data || {};
+  validateAndNormalize(obj);
+  state = obj;
+  loadedFileName = "online:supabase/catalogue/main";
+  setEnabled(true);
+  setDirty(false);
+  render();
+  return true;
+}
+
+async function portalLogin(username, password) {
+  if (!supabaseClient) {
+    alert("Supabase not configured (URL/ANON key missing).");
+    return;
+  }
+  const { data, error } = await supabaseClient.functions.invoke(SUPABASE_FN_NAME, {
+    body: { action: "login", username, password }
+  });
+  if (error) { alert("Login failed: " + error.message); return; }
+  if (!data?.ok) { alert(data?.error || "Invalid credentials"); return; }
+  savePortalSession({ token: data.token, role: data.role, username: data.username, exp: data.exp });
+}
+
+async function portalSaveCatalogue() {
+  if (!isAdmin()) { alert("Admin login required to save."); return; }
+  if (!supabaseClient) { alert("Supabase not configured yet."); return; }
+  const { data, error } = await supabaseClient.functions.invoke(SUPABASE_FN_NAME, {
+    body: { action: "save", token: portalSession.token, catalogue: state }
+  });
+  if (error) { alert("Save failed: " + error.message); return; }
+  if (!data?.ok) { alert(data?.error || "Save failed"); return; }
+  setDirty(false);
+  alert("Saved online ✅");
+}
+/* ------------------------------------------------------------------------------- */
 
 let state = null;
 let loadedFileName = "";
@@ -150,20 +277,10 @@ els.stockUnknownExpiry.addEventListener("change", () => {
   }
 });
 
-  // Manual load (JSON file from your computer)
+  // Manual load
   els.btnLoad.addEventListener("click", () => els.filePicker.click());
   els.filePicker.addEventListener("change", loadJsonFromPicker);
-
-  // Load from URL (for hosted usage)
-  els.btnLoadUrl.addEventListener("click", () => {
-    const url = (els.urlInput.value || "").trim();
-    if (!url) {
-      alert("Paste a URL to catalogue.json (example: https://your-site.com/data/catalogue.json)");
-      return;
-    }
-    loadJsonFromUrl(url);
-  });
-
+  
   // Dialog cancel buttons
   els.btnCatCancel.addEventListener("click", () => {
     ui.editingCategoryId = null;
@@ -177,6 +294,8 @@ els.stockUnknownExpiry.addEventListener("change", () => {
 
   // Save button
   els.btnSave.addEventListener("click", async () => {
+    if (supabaseClient) { await portalSaveCatalogue(); return; }
+
     if (!state) return;
 
     if (fs.folderHandle) {
@@ -319,19 +438,6 @@ els.stockUnknownExpiry.addEventListener("change", () => {
       ? "Folder mode: OFF"
       : "Folder mode: Not supported (use Chrome/Edge)";
   }
-
-  // Auto-load when hosted (http/https) and a default file exists
-  // Expected structure:
-  //   /data/catalogue.json
-  //   /media/<image files>
-  if (location.protocol === "http:" || location.protocol === "https:") {
-    // If user provided a URL in the input, we respect that.
-    // Otherwise we try the default relative path.
-    const defaultUrl = "data/catalogue.json";
-    loadJsonFromUrl(defaultUrl).catch(() => {
-      // Silent: page can still be used with manual load.
-    });
-  }
 }
 
 /* Folder mode (Chrome/Edge) */
@@ -421,35 +527,6 @@ async function loadJsonFromPicker() {
     els.filePicker.value = "";
   }
 }
-
-async function loadJsonFromUrl(url) {
-  if (!url) return;
-
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-    const obj = await res.json();
-
-    validateAndNormalize(obj);
-
-    state = obj;
-    loadedFileName = url;
-    ui.selectedCategoryId = "__all__";
-    ui.search = "";
-    els.search.value = "";
-
-    // When using URL mode, saving back to the server is not possible from the browser.
-    // We keep "Save JSON" to download a local file as backup.
-    setEnabled(true);
-    setDirty(false);
-    render();
-
-    els.fileNote.textContent = `Loaded from URL: ${url}`;
-  } catch (e) {
-    alert("Failed to load from URL: " + (e?.message || "Unknown error"));
-  }
-}
-
 
 /* State + UI */
 function setEnabled(on) {
@@ -874,6 +951,8 @@ if (showOrderedDot) {
 
 /* Dialogs */
 function openCategoryDlg(id) {
+  if (!isAdmin()) { alert("Admin login required."); return; }
+
   ui.editingCategoryId = id;
 
   if (id) {
@@ -891,6 +970,8 @@ function openCategoryDlg(id) {
 }
 
 function deleteCategory(id) {
+  if (!isAdmin()) { alert("Admin login required."); return; }
+
   const c = state.categories.find(x => x.id === id);
   if (!c) return;
 
@@ -922,6 +1003,8 @@ function deleteCategory(id) {
 }
 
 function openProductDlg(id) {
+  if (!isAdmin()) { alert("Admin login required."); return; }
+
   ui.editingProductId = id;
 
   // Build checkbox list
@@ -1111,6 +1194,8 @@ function createNormalLot(expiry, qty) {
 
 /* Stock */
 function openStockDlg(productId) {
+  if (!isAdmin()) { alert("Admin login required."); return; }
+
   ui.stockProductId = productId;
 
   const p = state.products.find((x) => x.id === productId);

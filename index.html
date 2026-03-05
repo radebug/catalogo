@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Product Catalogue</title>
   <link rel="stylesheet" href="styles.css" />
+<style>
+.auth { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.authInput { width: 160px; }
+@media (max-width: 980px){ .authInput{ width: 140px; } }
+</style>
 </head>
 <body>
   <header class="topbar">
@@ -24,6 +29,17 @@
 
       <span class="note" id="fileNote">No file loaded.</span>
       <div class="spacer"></div>
+
+      
+      <div class="spacer"></div>
+
+      <div class="auth">
+        <span class="note" id="authStatus">Viewer mode</span>
+        <input class="search authInput" id="authUser" type="text" placeholder="username" autocomplete="username">
+        <input class="search authInput" id="authPass" type="password" placeholder="password" autocomplete="current-password">
+        <button class="btn" id="btnLogin">Admin login</button>
+        <button class="btn" id="btnLogout" style="display:none">Logout</button>
+      </div>
 
       <input class="search" id="search" type="search" placeholder="Search name / wordings / codes…" disabled />
       <button class="btn" id="btnAddProduct" disabled>Add product</button>
@@ -246,6 +262,16 @@
     </div>
   </template>
 
-  <script src="app.js"></script>
+  
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // TODO: incolla qui i valori Supabase (Project Settings -> API)
+  window.SUPABASE_URL = "PASTE_YOUR_SUPABASE_URL";
+  window.SUPABASE_ANON_KEY = "PASTE_YOUR_SUPABASE_ANON_KEY";
+  // Edge Function name (default "catalogue")
+  window.SUPABASE_FN_NAME = "catalogue";
+</script>
+
+<script src="app.js"></script>
 </body>
 </html>
