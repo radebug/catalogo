@@ -186,21 +186,65 @@ async function portalLogin(username, password) {
     alert("Supabase not configured (URL/ANON key missing).");
     return;
   }
+
+  // ✅ assicura una sessione (JWT) anche se il browser ha perso storage
+  let { data: sess, error: sessErr } = await supabaseClient.auth.getSession();
+  if (sessErr) console.warn("getSession error:", sessErr);
+
+  if (!sess?.session) {
+    const { data: anon, error: anonErr } = await supabaseClient.auth.signInAnonymously();
+    if (anonErr) {
+      alert("Anonymous sign-in failed (enable it in Supabase Auth Providers).");
+      console.error(anonErr);
+      return;
+    }
+    sess = { session: anon.session };
+  }
+
+  const accessToken = sess.session.access_token;
+
+  // ✅ passiamo Authorization header esplicitamente
   const { data, error } = await supabaseClient.functions.invoke(SUPABASE_FN_NAME, {
-    body: { action: "login", username, password }
+    body: { action: "login", username, password },
+    headers: { Authorization: `Bearer ${accessToken}` }
   });
-  if (error) { alert("Login failed: " + error.message); return; }
-  if (!data?.ok) { alert(data?.error || "Invalid credentials"); return; }
+
+  if (error) {
+    alert("Login failed: " + error.message);
+    console.error(error);
+    return;
+  }
+  if (!data?.ok) {
+    alert(data?.error || "Invalid credentials");
+    return;
+  }
+
   savePortalSession({ token: data.token, role: data.role, username: data.username, exp: data.exp });
 }
 
 async function portalSaveCatalogue() {
   if (!isAdmin()) { alert("Admin login required to save."); return; }
   if (!supabaseClient) { alert("Supabase not configured yet."); return; }
+
+  let { data: sess } = await supabaseClient.auth.getSession();
+  if (!sess?.session) {
+    const { data: anon, error: anonErr } = await supabaseClient.auth.signInAnonymously();
+    if (anonErr) {
+      alert("Anonymous sign-in failed (enable it in Supabase Auth Providers).");
+      console.error(anonErr);
+      return;
+    }
+    sess = { session: anon.session };
+  }
+
+  const accessToken = sess.session.access_token;
+
   const { data, error } = await supabaseClient.functions.invoke(SUPABASE_FN_NAME, {
-    body: { action: "save", token: portalSession.token, catalogue: state }
+    body: { action: "save", token: portalSession.token, catalogue: state },
+    headers: { Authorization: `Bearer ${accessToken}` }
   });
-  if (error) { alert("Save failed: " + error.message); return; }
+
+  if (error) { alert("Save failed: " + error.message); console.error(error); return; }
   if (!data?.ok) { alert(data?.error || "Save failed"); return; }
   setDirty(false);
   alert("Saved online ✅");
