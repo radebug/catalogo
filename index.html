@@ -1,11 +1,14 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Product Catalogue</title>
   <link rel="stylesheet" href="styles.css" />
 <style>
+/* ---- ONLINE MODE (Supabase): hide local file/folder UI ---- */
+#btnOpenFolder, #folderStatus, #btnLoad, #filePicker, #fileNote, #btnLoadUrl, #urlInput,
+#btnSaveJson, #btnLoadJson, #btnUseFolder { display:none !important; }
 .auth { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .authInput { width: 160px; }
 @media (max-width: 980px){ .authInput{ width: 140px; } }
@@ -22,17 +25,11 @@
       <button class="btn" id="btnLoad">Load JSON</button>
       <button class="btn" id="btnSave" disabled>Save JSON</button>
 
-      <div class="spacer"></div>
-
-      <input class="search" id="urlInput" type="url" placeholder="Optional: URL to data/catalogue.json (https://…/catalogue.json)" />
-      <button class="btn" id="btnLoadUrl">Load URL</button>
-
       <span class="note" id="fileNote">No file loaded.</span>
       <div class="spacer"></div>
 
       
       <div class="spacer"></div>
-
       <div class="auth">
         <span class="note" id="authStatus">Viewer mode</span>
         <input class="search authInput" id="authUser" type="text" placeholder="username" autocomplete="username">
@@ -52,7 +49,8 @@
   <main class="layout">
     <aside class="sidebar">
       <div class="h">Categories</div>
-      <input type="text" id="catSearch" class="search" placeholder="Filter categories..." style="width: 100%; margin-bottom: 10px; padding: 6px 10px; font-size: 13px;">
+        <input type="text" id="catSearch" class="search" placeholder="Filter categories..." style="width: 100%; margin-bottom: 10px; padding: 6px 10px; font-size: 13px;">
+      </div>
       <div id="categoryList" class="categoryList"></div>
       <div class="smallNote">
         Images are loaded from <b>media/</b> by filename (example: <code>tiramisu.jpg</code>).
@@ -173,11 +171,10 @@
           <label class="row">
             <span>Expiry date (DD/MM/YYYY)</span>
             <input type="text" id="stockExpiry" placeholder="DD/MM/YYYY" inputmode="numeric">
-          </label>
-
-          <label style="display:flex; align-items:center; gap:6px; margin-top:-6px;">
-            <input type="checkbox" id="stockUnknownExpiry">
-            Unknown expiry date
+<label style="display:flex; align-items:center; gap:6px; margin-top:-6px;">
+  <input type="checkbox" id="stockUnknownExpiry">
+  Unknown expiry date
+</label>
           </label>
 
           <label class="row">
@@ -265,11 +262,9 @@
   
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // TODO: incolla qui i valori Supabase (Project Settings -> API)
-  window.SUPABASE_URL = "https://ocsctsikfeklqqsuicls.supabase.co";
-  window.SUPABASE_ANON_KEY = "sb_publishable_FPoftaXY3jc_1A_HPVHFAA_9Bl6Kj1i";
-  // Edge Function name (default "catalogue")
-  window.SUPABASE_FN_NAME = "catalogue";
+  window.SUPABASE_URL = "PASTE_YOUR_SUPABASE_URL";
+  window.SUPABASE_ANON_KEY = "PASTE_YOUR_SUPABASE_ANON_KEY";
+  window.SUPABASE_FN_NAME = "hyper-worker";
 </script>
 
 <script src="app.js"></script>

@@ -79,7 +79,7 @@ stockUnitSelector.innerHTML = `
 /* -------------------- Supabase + Portal Auth (username/password) -------------------- */
 const SUPABASE_URL = window.SUPABASE_URL;
 const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY;
-const SUPABASE_FN_NAME = window.SUPABASE_FN_NAME || "catalogue";
+const SUPABASE_FN_NAME = window.SUPABASE_FN_NAME || "hyper-worker";
 const CATALOGUE_ROW_ID = "main";
 
 let supabaseClient = null;
@@ -100,22 +100,17 @@ function loadPortalSession() {
     return s;
   } catch { return null; }
 }
-
 function savePortalSession(s) {
   portalSession = s;
   localStorage.setItem(PORTAL_SESSION_KEY, JSON.stringify(s));
   refreshAuthUI();
 }
-
 function clearPortalSession() {
   portalSession = null;
   localStorage.removeItem(PORTAL_SESSION_KEY);
   refreshAuthUI();
 }
-
-function isAdmin() {
-  return portalSession?.role === "admin";
-}
+function isAdmin() { return portalSession?.role === "admin"; }
 
 function refreshAuthUI() {
   const st = document.getElementById("authStatus");
@@ -951,8 +946,6 @@ if (showOrderedDot) {
 
 /* Dialogs */
 function openCategoryDlg(id) {
-  if (!isAdmin()) { alert("Admin login required."); return; }
-
   ui.editingCategoryId = id;
 
   if (id) {
@@ -970,8 +963,6 @@ function openCategoryDlg(id) {
 }
 
 function deleteCategory(id) {
-  if (!isAdmin()) { alert("Admin login required."); return; }
-
   const c = state.categories.find(x => x.id === id);
   if (!c) return;
 
@@ -1003,8 +994,6 @@ function deleteCategory(id) {
 }
 
 function openProductDlg(id) {
-  if (!isAdmin()) { alert("Admin login required."); return; }
-
   ui.editingProductId = id;
 
   // Build checkbox list
@@ -1194,8 +1183,6 @@ function createNormalLot(expiry, qty) {
 
 /* Stock */
 function openStockDlg(productId) {
-  if (!isAdmin()) { alert("Admin login required."); return; }
-
   ui.stockProductId = productId;
 
   const p = state.products.find((x) => x.id === productId);
