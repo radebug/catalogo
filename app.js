@@ -182,19 +182,19 @@ async function loadCatalogueOnline() {
 }
 
 async function portalLogin(username, password) {
+  // assicura che supabaseClient esista
+  await initSupabase();
   if (!supabaseClient) {
-    alert("Supabase not configured (URL/ANON key missing).");
+    alert("Supabase non configurato (URL/KEY).");
     return;
   }
 
-  // ✅ assicura una sessione (JWT) anche se il browser ha perso storage
-  let { data: sess, error: sessErr } = await supabaseClient.auth.getSession();
-  if (sessErr) console.warn("getSession error:", sessErr);
-
+  // ✅ assicura una sessione anonima (JWT)
+  let { data: sess } = await supabaseClient.auth.getSession();
   if (!sess?.session) {
     const { data: anon, error: anonErr } = await supabaseClient.auth.signInAnonymously();
     if (anonErr) {
-      alert("Anonymous sign-in failed (enable it in Supabase Auth Providers).");
+      alert("Anonymous sign-in fallito. Controlla che sia attivo in Supabase Auth.");
       console.error(anonErr);
       return;
     }
@@ -203,7 +203,7 @@ async function portalLogin(username, password) {
 
   const accessToken = sess.session.access_token;
 
-  // ✅ passiamo Authorization header esplicitamente
+  // ✅ chiama la function con Authorization header esplicito
   const { data, error } = await supabaseClient.functions.invoke(SUPABASE_FN_NAME, {
     body: { action: "login", username, password },
     headers: { Authorization: `Bearer ${accessToken}` }
@@ -215,7 +215,7 @@ async function portalLogin(username, password) {
     return;
   }
   if (!data?.ok) {
-    alert(data?.error || "Invalid credentials");
+    alert(data?.error || "Credenziali non valide");
     return;
   }
 
