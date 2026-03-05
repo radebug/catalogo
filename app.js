@@ -148,6 +148,10 @@ async function initSupabase() {
     return;
   }
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+	// ✅ Serve per ottenere un JWT e poter chiamare Edge Functions con JWT verification ON
+const { data: sess } = await supabaseClient.auth.getSession();
+if (!sess?.session) {
+  await supabaseClient.auth.signInAnonymously();
 }
 
 async function loadCatalogueOnline() {
