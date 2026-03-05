@@ -223,20 +223,17 @@ async function portalLogin(username, password) {
 }
 
 async function portalSaveCatalogue() {
-  if (!isAdmin()) { alert("Admin login required to save."); return; }
-  if (!supabaseClient) { alert("Supabase not configured yet."); return; }
+  if (!isAdmin()) { alert("Serve login admin per salvare."); return; }
+
+  await initSupabase();
+  if (!supabaseClient) return;
 
   let { data: sess } = await supabaseClient.auth.getSession();
   if (!sess?.session) {
     const { data: anon, error: anonErr } = await supabaseClient.auth.signInAnonymously();
-    if (anonErr) {
-      alert("Anonymous sign-in failed (enable it in Supabase Auth Providers).");
-      console.error(anonErr);
-      return;
-    }
+    if (anonErr) { alert("Anonymous sign-in fallito."); console.error(anonErr); return; }
     sess = { session: anon.session };
   }
-
   const accessToken = sess.session.access_token;
 
   const { data, error } = await supabaseClient.functions.invoke(SUPABASE_FN_NAME, {
@@ -246,6 +243,7 @@ async function portalSaveCatalogue() {
 
   if (error) { alert("Save failed: " + error.message); console.error(error); return; }
   if (!data?.ok) { alert(data?.error || "Save failed"); return; }
+
   setDirty(false);
   alert("Saved online ✅");
 }
